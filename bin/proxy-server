@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+
+var Proxy = require('../');
+var proxy = new Proxy();
+var port = parseInt(process.argv[2] || 8080);
+var host = process.argv[3] || '127.0.0.1'
+proxy.listen(port, host, function() {
+   console.log('Listening to ' + host + ':' + port);
+});

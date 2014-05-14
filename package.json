@@ -1,0 +1,29 @@
+{
+  "name": "xv-proxy",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seppo0010/xv-proxy.git"
+  },
+  "description": "HTTP proxy",
+  "author": "Sebastian Waisbrot <seppo0010@gmail.com>",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "async": "^0.8.0",
+    "coveralls": "2.10.0",
+    "expect.js": "0.3.1",
+    "mocha": "1.18.2",
+    "mocha-lcov-reporter": "0.0.1"
+  },
+  "scripts": {
+    "proxy": "node bin/proxy-server 8080",
+    "coveralls": "mocha --require blanket --reporter mocha-lcov-reporter | ./node_modules/coveralls/bin/coveralls.js",
+    "test": "mocha -R landing test/*-test.js",
+    "test-cov": "mocha --require blanket -R html-cov > cov/coverage.html"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "license": "BSD"
+}
