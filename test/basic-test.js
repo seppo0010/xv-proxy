@@ -1,11 +1,13 @@
 var expect = require('expect.js');
 var Proxy = require('../index');
 var http = require('http');
+var request_factory = require('./request');
 
 var host = '127.0.0.1';
 var port = 8081;
 var dummyport = 8082;
 
+var doRequest = request_factory(host, port, dummyport);
 describe('basic proxying', function() {
     var proxy;
     var dummyserver;
@@ -50,55 +52,6 @@ describe('basic proxying', function() {
             if (--todo == 0) done();
         });
     });
-
-    var doRequest = function(options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = {};
-        }
-        var req = http.request({
-            port: port,
-            hostname: host,
-            method: options.method || 'GET',
-            path: 'http://' + host + ':' + dummyport + '/' + (
-                options.url || ''),
-            headers: options.headers || {}
-        });
-        if (options.data) {
-            req.write(options.data, 'binary');
-        }
-        req.end();
-
-        var r = {
-            data: ''
-        };
-        req.on('response', function(res) {
-            r.statusCode = res.statusCode;
-            r.headers = res.headers;
-            res.on('data', function(chunk) {
-                r.data += chunk;
-            });
-            res.on('end', function() {
-                if (callback) {
-                    callback(null, r);
-                    callback = null;
-                }
-            });
-            res.on('error', function(e) {
-                if (callback) {
-                    callback(e);
-                    callback = null;
-                }
-            });
-        });
-
-        req.on('error', function(e) {
-            if (callback) {
-                callback(e);
-                callback = null;
-            }
-        });
-    };
 
     it('should proxy a request', function(done) {
         doRequest(function(err, res) {
