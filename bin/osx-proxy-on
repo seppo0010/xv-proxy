@@ -1,0 +1,2 @@
+sudo networksetup -setwebproxy Wi-Fi localhost 8000 off
+sudo networksetup -setsecurewebproxy 'Wi-Fi' localhost 8000 off

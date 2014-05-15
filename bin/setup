@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+sudo chmod 555 $DIR/osx-proxy-o{n,ff}
+sudo chown root:wheel $DIR/osx-proxy-o{n,ff}
+sudo chmod u+s $DIR/osx-proxy-o{n,ff}
