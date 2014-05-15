@@ -15,6 +15,7 @@ describe('pipe proxying', function() {
     var proxy;
     var echoserver;
     var recordproxyrequest;
+    var recordproxyresponse;
     var RecordProxy;
 
     before(function(done) {
@@ -82,6 +83,24 @@ describe('pipe proxying', function() {
         doRequest({data: data, method: 'POST'}, function(err, res) {
             expect(recordproxyresponse.data).to.be(data);
             expect(res.data).to.be(data);
+            done();
+        });
+    });
+
+    it('should sleep 500ms', function(done) {
+        var t = Date.now();
+        var data = 'asd';
+        var _write = recordproxyresponse._write;
+        recordproxyresponse._write = function() {
+            var args = arguments;
+            setTimeout(function() {
+                _write.apply(recordproxyresponse, args);
+            }, 500);
+        };
+        doRequest({data: data, method: 'POST'}, function(err, res) {
+            expect(recordproxyresponse.data).to.be(data);
+            expect(res.data).to.be(data);
+            expect(Date.now() - t).to.be.above(500);
             done();
         });
     });
