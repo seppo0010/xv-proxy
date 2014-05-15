@@ -15,7 +15,9 @@ describe('pipe proxying', function() {
     var proxy;
     var echoserver;
     var recordproxyrequest;
+    var recordproxyrequestfactory;
     var recordproxyresponse;
+    var recordproxyresponsefactory;
     var RecordProxy;
 
     before(function(done) {
@@ -44,14 +46,19 @@ describe('pipe proxying', function() {
         RecordProxy.prototype._write = function(chunk) {
             this.data += chunk.toString();
             return PassThrough.prototype._write.apply(this, arguments);
-        };
-      });
+        }
+        recordproxyrequestfactory = function() {
+            return recordproxyrequest = new RecordProxy();
+        }
+        recordproxyresponsefactory = function() {
+            return recordproxyresponse = new RecordProxy();
+        }
+        proxy.addRequestPipeFactory(recordproxyrequestfactory);
+        proxy.addResponsePipeFactory(recordproxyresponsefactory);
+    });
 
-      beforeEach(function() {
-        recordproxyrequest = new RecordProxy();
-        recordproxyresponse = new RecordProxy();
-        proxy.addRequestDuplexPipe(recordproxyrequest);
-        proxy.addResponseDuplexPipe(recordproxyresponse);
+    beforeEach(function() {
+        recordproxyrequest = recordproxyresponse = null;
     });
 
     after(function(done) {
@@ -62,11 +69,8 @@ describe('pipe proxying', function() {
         proxy.close(function() {
             if (--todo == 0) done();
         });
-    });
-
-    afterEach(function() {
-        proxy.removeRequestDuplexPipe(recordproxyrequest);
-        proxy.removeResponseDuplexPipe(recordproxyresponse);
+        proxy.removeRequestPipeFactory(recordproxyrequestfactory);
+        proxy.removeResponsePipeFactory(recordproxyresponsefactory);
     });
 
     it('should be able to read request data', function(done) {
@@ -90,13 +94,26 @@ describe('pipe proxying', function() {
     it('should sleep 500ms', function(done) {
         var t = Date.now();
         var data = 'asd';
-        var _write = recordproxyresponse._write;
-        recordproxyresponse._write = function() {
-            var args = arguments;
-            setTimeout(function() {
-                _write.apply(recordproxyresponse, args);
-            }, 500);
+        var slowdownfactory = function() {
+            var SlowDown = function(options) {
+                PassThrough.call(this, options);
+            };
+            util.inherits(SlowDown, PassThrough);
+
+            SlowDown.prototype._read = function() {
+                return PassThrough.prototype._read.apply(this, arguments);
+            };
+
+            SlowDown.prototype._write = function() {
+                var self = this;
+                var args = arguments;
+                setTimeout(function() {
+                    return PassThrough.prototype._write.apply(self, args);
+                }, 500);
+            };
+            return new SlowDown();
         };
+        proxy.addRequestPipeFactory(slowdownfactory);
         doRequest({data: data, method: 'POST'}, function(err, res) {
             expect(recordproxyresponse.data).to.be(data);
             expect(res.data).to.be(data);
