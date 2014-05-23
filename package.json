@@ -8,7 +8,9 @@
   "description": "HTTP proxy",
   "author": "Sebastian Waisbrot <seppo0010@gmail.com>",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "commander": "^2.2.0"
+  },
   "devDependencies": {
     "async": "^0.8.0",
     "coveralls": "2.10.0",

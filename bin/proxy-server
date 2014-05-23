@@ -1,9 +1,32 @@
 #!/usr/bin/env node
-
+var program = require('commander');
+var PassThrough = (require('stream').PassThrough ||
+        require('readable-stream').PassThrough);
 var Proxy = require('../');
+
+program
+    .version(Proxy.VERSION)
+    .option('-H, --host <host>', 'Allow connections from this host (default: 127.0.0.1)')
+    .option('-P, --port <port>', 'Port to use (default: 8000)')
+    .option('--printurl', 'Print on the terminal every url')
+    .option('--printresponsecode', 'Print on the terminal every http status code')
+    .parse(process.argv);
+
 var proxy = new Proxy();
-var port = parseInt(process.argv[2] || 8000);
-var host = process.argv[3] || '127.0.0.1'
+var port = parseInt(program.port || 8000);
+var host = program.host || '127.0.0.1'
+if (program.printurl) {
+    proxy.addRequestPipeFactory(function(request) {
+        console.log('Sending request to', request.url);
+        return new PassThrough();
+    });
+}
+if (program.printresponsecode) {
+    proxy.addResponsePipeFactory(function(request, response) {
+        console.log('Received response', response.statusCode, 'for', request.url);
+        return new PassThrough();
+    });
+}
 proxy.listen(port, host, function() {
    console.log('Listening to ' + host + ':' + port);
 });
