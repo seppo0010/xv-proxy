@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 var program = require('commander');
+var fs = require('fs');
 var PassThrough = (require('stream').PassThrough ||
         require('readable-stream').PassThrough);
 var Proxy = require('../');
@@ -10,9 +11,18 @@ program
     .option('-P, --port <port>', 'Port to use (default: 8000)')
     .option('--printurl', 'Print on the terminal every url')
     .option('--printresponsecode', 'Print on the terminal every http status code')
+    .option('--sslkey <key.pem>', 'Key to use for ssl proxying')
+    .option('--sslcertificate <certificate.pem>', 'Certificate to use for ssl proxying')
     .parse(process.argv);
 
-var proxy = new Proxy();
+var options = {};
+if (program.sslkey && program.sslcertificate) {
+    options.ssl = {
+        key: fs.readFileSync(program.sslkey),
+        cert: fs.readFileSync(program.sslcertificate),
+    };
+}
+var proxy = new Proxy(options);
 var port = parseInt(program.port || 8000);
 var host = program.host || '127.0.0.1'
 if (program.printurl) {
