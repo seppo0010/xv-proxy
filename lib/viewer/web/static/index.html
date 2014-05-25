@@ -1,0 +1,45 @@
+<script src="/js/jquery/dist/jquery.min.js"></script>
+<script src="/js/lodash/dist/lodash.min.js"></script>
+<script src="/js/list.js/dist/list.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io.connect('http://' + location.host);
+var data;
+var requestList;
+socket.on('requests:initial', function(_data) {
+    data = _data;
+    $('body').html(_.template($('#request_list').html(), {requests: data}));
+    var options = {
+        valueNames: ['url', 'method', 'status']
+    };
+    requestList = new List('requests', options);
+});
+socket.on('requests:add', function(r) {
+    data = data || [];
+    data.push(r);
+    requestList.add(r);
+});
+</script>
+<script type="text/html" id="request_list">
+<div id="requests">
+    <input class="search" placeholder="Search" />
+    <button class="sort" data-sort="url">
+    Url
+    </button>
+    <button class="sort" data-sort="method">
+    Method
+    </button>
+    <button class="sort" data-sort="status">
+    Status
+    </button>
+    <ul class="list">
+        <% _.each(requests, function(request) { %>
+        <li>
+            <p class="url"><%= request.url %></p>
+            <p class="method"><%= request.method %></p>
+            <p class="status"><%= request.status %></p>
+        </li>
+        <% }) %>
+    </ul>
+</div>
+</script>
