@@ -22,7 +22,7 @@ describe('provider', function() {
             done();
         });
 
-        proxy.addProvider(function(request, callback) {
+        proxy.addProvider(function(requestId, request, callback) {
             var readable = new Readable();
             var data = ['zxc'];
             readable._read = function() {
