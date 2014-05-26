@@ -90,6 +90,10 @@
         <% }) %>
     </ul>
     <% if (response_data) { %>
+    <% if (response_headers['content-type'].substr(0, 6) === 'image/') { %>
+        <h3>Image</h3>
+        <img src="data:<%- response_headers['content-type'] %>;base64,<%- btoa(response_data) %>">
+    <% } %>
     <h3>Data</h3>
     <p><%- response_data %></p>
     <% } %>
