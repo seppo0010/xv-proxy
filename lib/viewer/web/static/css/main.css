@@ -40,6 +40,8 @@ body.show-request #request-data #frame {
     padding: 4px;
     margin-left: 14px;
     padding-right: 14px;
+    position: absolute;
+    min-height: 100%;
 }
 
 body.show-request #request-data label {

@@ -15,6 +15,7 @@
     var keys = ['id', 'url', 'method', 'status', 'duration', 'latency', 'start_time', 'end_time'];
     var show_request = function(requestId) {
         $('body').addClass('show-request');
+       $('#request-data').html('');
         socket.emit('request:get', requestId);
     };
     var update_url = window.onhashchange = function() {
@@ -73,12 +74,14 @@
     <a href="#">X</a>
     <h1><%- url %></h1>
     <h2>Request</h2>
+    <% if (request_headers) { %>
     <h3>Headers</h3>
     <ul>
         <% $.each(request_headers, function(name, value) { %>
             <li><label><%- name %>:</label> <%- value %></li>
         <% }) %>
     </ul>
+     <% } %>
     <% if (request_data) { %>
     <h3>Data</h3>
     <p><%- request_data %></p>
@@ -86,12 +89,14 @@
     <h2>Response</h2>
     <h3>Status code</h3>
     <p><%- status %></p>
+    <% if (response_headers) { %>
     <h3>Headers</h3>
     <ul>
         <% $.each(response_headers, function(name, value) { %>
             <li><label><%- name %>:</label> <%- value %></li>
         <% }) %>
     </ul>
+     <% } %>
     <% if (response_data) { %>
     <% if (response_headers['content-type'].substr(0, 6) === 'image/') { %>
         <h3>Image</h3>
