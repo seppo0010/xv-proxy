@@ -1,0 +1,12 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#requests table {
+    width: 100%;
+}
+
+th {
+    text-align: left;
+}
