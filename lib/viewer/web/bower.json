@@ -5,7 +5,8 @@
   "dependencies": {
     "jquery": "~2.1.1",
     "lodash": "~2.4.1",
-    "list.js": "~1.1.1"
+    "list.js": "~1.1.1",
+    "jsoneditor": "~2.3.6"
   },
   "devDependencies": {}
 }

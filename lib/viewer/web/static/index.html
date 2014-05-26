@@ -1,9 +1,11 @@
 <!doctype html>
 <head>
     <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="/js/jsoneditor/jsoneditor-min.css" />
     <script src="/js/jquery/dist/jquery.min.js"></script>
     <script src="/js/lodash/dist/lodash.min.js"></script>
     <script src="/js/list.js/dist/list.min.js"></script>
+    <script src="/js/jsoneditor/jsoneditor-min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
     var socket = io.connect('http://' + location.host);
@@ -68,6 +70,7 @@
     </script>
     <script type="text/html" id="request-data-template">
     <div id="frame">
+    <a href="#">X</a>
     <h1><%- url %></h1>
     <h2>Request</h2>
     <h3>Headers</h3>
@@ -93,6 +96,19 @@
     <% if (response_headers['content-type'].substr(0, 6) === 'image/') { %>
         <h3>Image</h3>
         <img src="data:<%- response_headers['content-type'] %>;base64,<%- btoa(response_data) %>">
+    <% } %>
+    <% if (response_headers['content-type'] === 'application/json' ||
+          response_headers['content-type'] === 'application/x-json') { %>
+       <div id="json-response">
+       </div>
+      <%
+      setTimeout(function() {
+         var container = document.getElementById('json-response');
+         var options = {mode: 'view'};
+         var json = JSON.parse(response_data);
+         new jsoneditor.JSONEditor(container, options, json);
+      });
+      %>
     <% } %>
     <h3>Data</h3>
     <p><%- response_data %></p>
