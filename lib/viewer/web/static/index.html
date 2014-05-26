@@ -9,26 +9,32 @@
     var socket = io.connect('http://' + location.host);
     var data;
     var requestList;
+    var keys = ['url', 'method', 'status', 'duration', 'latency', 'start_time', 'end_time'];
+    var format_request = function(r) {
+        return {
+            url: r.url,
+            method: r.method,
+            status: r.status,
+            duration: r.response_end ? r.response_end - r.request_start + 'ms' : '',
+            latency: r.response_start ? r.response_start - r.request_end + 'ms' : '',
+            start_time: r.request_start ? new Date(parseInt(r.request_start)).toISOString() : '',
+            end_time: r.response_end ? new Date(parseInt(r.response_end)).toISOString() : ''
+        };
+    };
     socket.on('requests:initial', function(_data) {
         data = _data;
-        $('body').html(_.template($('#request_list').html(), {requests: data}));
+        $('body').html(_.template($('#request_list').html(), {
+            requests: _.map(data, format_request)
+        }));
         var options = {
-            valueNames: ['url', 'method', 'status', 'duration', 'latency', 'start_time', 'end_time']
+            valueNames: keys
         };
         requestList = new List('requests', options);
     });
     socket.on('requests:add', function(r) {
         data = data || [];
         data.push(r);
-        requestList.add({
-            url: r.url,
-            method: r.method,
-            status: r.status,
-            duration: r.response_end ? r.response_end - r.request_start + 'ms' : '',
-            latency: r.response_start ? r.response_start - r.request_end + 'ms' : '',
-            start_time: new Date(parseInt(r.request_start)).toISOString(),
-            end_time: r.response_end ? new Date(parseInt(r.response_end)).toISOString() : ''
-        });
+        requestList.add(format_request(r));
     });
     </script>
     <script type="text/html" id="request_list">
@@ -63,27 +69,9 @@
             <tbody class="list">
                 <% _.each(requests, function(request) { %>
                     <tr>
-                        <td class="url"><%= request.url %></td>
-                        <td class="method"><%= request.method %></td>
-                        <td class="status"><%= request.status %></td>
-                        <td class="duration">
-                        <% if (request.response_end) { %>
-                            <%= request.response_end - request.request_start %>ms
-                        <% } %>
-                        </td>
-                        <td class="latency">
-                        <% if (request.response_start) { %>
-                            <%= request.response_start - request.request_end %>ms
-                        <% } %>
-                        </td>
-                        <td class="start_time">
-                        <%= new Date(parseInt(request.request_start)).toISOString() %>
-                        </td>
-                        <td class="end_time">
-                        <% if (request.response_end) { %>
-                            <%= new Date(parseInt(request.response_end)).toISOString() %>
-                        <% } %>
-                        </td>
+                        <% _.each(keys, function(k) { %>
+                            <td class="<%= k %>"><%= request[k] %></td>
+                        <% }) %>
                     </tr>
                 <% }) %>
             </tbody>
