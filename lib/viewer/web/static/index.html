@@ -7,11 +7,31 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
     var socket = io.connect('http://' + location.host);
-    var data;
+    var requestById = {};
     var requestList;
-    var keys = ['url', 'method', 'status', 'duration', 'latency', 'start_time', 'end_time'];
+    var currentHash = null;
+    var keys = ['id', 'url', 'method', 'status', 'duration', 'latency', 'start_time', 'end_time'];
+    var show_request = function(requestId) {
+        $('body').addClass('show-request');
+        socket.emit('request:get', requestId);
+    };
+    var update_url = window.onhashchange = function() {
+        currentHash = location.hash.substr(1);
+        if (currentHash) {
+            show_request(currentHash);
+        } else {
+            $('body').removeClass('show-request');
+        }
+    };
+    $(function() {
+        $(document).on('click', '.list td', function(ev) {
+            var id = $(ev.currentTarget).parent('tr').find('td.id').text();
+            location.href = '#' + id;
+        });
+    });
     var format_request = function(r) {
         return {
+            id: r.id,
             url: r.url,
             method: r.method,
             status: r.status,
@@ -21,23 +41,62 @@
             end_time: r.response_end ? new Date(parseInt(r.response_end)).toISOString() : ''
         };
     };
-    socket.on('requests:initial', function(_data) {
-        data = _data;
-        $('body').html(_.template($('#request_list').html(), {
-            requests: _.map(data, format_request)
-        }));
+    socket.on('requests:initial', function(data) {
         var options = {
             valueNames: keys
         };
+
         requestList = new List('requests', options);
+        $.each(data, function(i, r) {
+            requestById[r.id] = r;
+            requestList.add(format_request(r));
+        });
+        update_url();
     });
     socket.on('requests:add', function(r) {
-        data = data || [];
-        data.push(r);
+        requestById[r.id] = r;
         requestList.add(format_request(r));
     });
+    socket.on('request:info', function(r) {
+        if (r.id === currentHash) {
+            var currentRequest = requestById[r.id];
+            $('#request-data').html(
+                _.template($('#request-data-template').html(),
+                    _.extend({}, r, currentRequest)));
+        }
+    });
     </script>
-    <script type="text/html" id="request_list">
+    <script type="text/html" id="request-data-template">
+    <div id="frame">
+    <h1><%- url %></h1>
+    <h2>Request</h2>
+    <h3>Headers</h3>
+    <ul>
+        <% $.each(request_headers, function(name, value) { %>
+            <li><label><%- name %>:</label> <%- value %></li>
+        <% }) %>
+    </ul>
+    <% if (request_data) { %>
+    <h3>Data</h3>
+    <p><%- request_data %></p>
+    <% } %>
+    <h2>Response</h2>
+    <h3>Status code</h3>
+    <p><%- status %></p>
+    <h3>Headers</h3>
+    <ul>
+        <% $.each(response_headers, function(name, value) { %>
+            <li><label><%- name %>:</label> <%- value %></li>
+        <% }) %>
+    </ul>
+    <% if (response_data) { %>
+    <h3>Data</h3>
+    <p><%- response_data %></p>
+    <% } %>
+    </div>
+    </script>
+</head>
+<body>
     <div id="requests">
         <input class="search" placeholder="Search" />
         <table>
@@ -67,18 +126,20 @@
                 </tr>
             </thead>
             <tbody class="list">
-                <% _.each(requests, function(request) { %>
-                    <tr>
-                        <% _.each(keys, function(k) { %>
-                            <td class="<%= k %>"><%= request[k] %></td>
-                        <% }) %>
-                    </tr>
-                <% }) %>
+                <tr>
+                    <td class="id"></td>
+                    <td class="url"></td>
+                    <td class="method"></td>
+                    <td class="status"></td>
+                    <td class="duration"></td>
+                    <td class="latency"></td>
+                    <td class="start_time"></td>
+                    <td class="end_time"></td>
+                </tr>
             </tbody>
         </table>
     </div>
-    </script>
-</head>
-<body>
+    <div id="request-data">
+    </div>
 </body>
 </html>
