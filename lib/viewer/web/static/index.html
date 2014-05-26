@@ -86,6 +86,8 @@
     <h3>Data</h3>
     <p><%- request_data %></p>
     <% } %>
+    <h3>Copy as curl</h3>
+    <textarea rows="3">curl <% if (request_headers['accept-encoding'].indexOf('gzip') || request_headers['accept-encoding'].indexOf('deflate')) { %>--compressed <% } %><% if (request_data) { %>-d "<%- request_data.replace(/"/g, '\\"') %>" <% } %><% $.each(request_headers, function(name, value) { %>-H "<%- name.replace(/"/g, '\\"') %>: <%- value.replace(/"/g, '\\"') %>" <% }) %><%- url %></textarea>
     <h2>Response</h2>
     <h3>Status code</h3>
     <p><%- status %></p>

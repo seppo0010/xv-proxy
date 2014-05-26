@@ -48,6 +48,10 @@ body.show-request #request-data label {
     font-weight: bold;
 }
 
+body.show-request #request-data textarea {
+    width: 100%;
+}
+
 body.show-request #request-data ul,
 body.show-request #request-data ul li {
     display: block;
