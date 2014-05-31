@@ -53,6 +53,11 @@ if (program.recorder === 'redis') {
     });
     proxy.addRequestPipeFactory(recorder.request.bind(recorder));
     proxy.addResponsePipeFactory(recorder.response.bind(recorder));
+} else if (program.recorder === 'memory') {
+    var MemoryRecorder = require('../lib/recorder/memory');
+    var recorder = new MemoryRecorder({});
+    proxy.addRequestPipeFactory(recorder.request.bind(recorder));
+    proxy.addResponsePipeFactory(recorder.response.bind(recorder));
 }
 if (program.webviewer) {
     if (!recorder) {
